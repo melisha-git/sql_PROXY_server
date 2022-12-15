@@ -5,17 +5,23 @@
 Разработать на C++ TCP прокси-сервер для СУБД с возможностью логирования всех SQL запросов, проходящих через него.
 В качестве СУБД на выбор можно использовать:
 
-MySQL (а также клоны — MariaDB/Percona);
-PostgreSQL;
-MS SQL Server.
+-MySQL (а также клоны — MariaDB/Percona);
+
+-PostgreSQL;
+
+-MS SQL Server.
 
 Для выполнения тестового задания можно использовать одно из следующих средств (на выбор):
 
-ACE (AdaptiveCommunicationEnvironment);
-boost.asio;
-WinSock (желательно IOCP);
-Berkley sockets (select/poll/epoll);
-libev/libevent.
+-ACE (AdaptiveCommunicationEnvironment);
+
+-boost.asio;
+
+-WinSock (желательно IOCP);
+
+-Berkley sockets (select/poll/epoll);
+
+-libev/libevent.
 
 Прочих зависимостей быть не должно.
 
