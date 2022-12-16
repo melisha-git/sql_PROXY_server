@@ -20,7 +20,7 @@ private:
 
 	server(const server &) {}
 
-	static void logging(const std::shared_ptr<std::vector<char>>&);
+	static void logging(const std::shared_ptr<std::vector<char>>&, int n);
 
 	static void accept();
 
@@ -63,15 +63,23 @@ void server::accept() {
 		});
 }
 
-void server::logging(const std::shared_ptr<std::vector<char>> &buffer) {
+void server::logging(const std::shared_ptr<std::vector<char>> &buffer, int n) {
 	static int count = 0;
-	std::string line((buffer->data()), buffer->size());
+
+	std::string line((buffer->data()), n - 1);
+	if (line.empty())
+		return;
+	if (static_cast<int>(line[0]) != 81)
+		return;
 	std::ofstream file("log.txt", std::ios::app |  std::ios::binary);
 	if (!file.is_open()) {
 		std::cerr << "Log.txt not open\n";
 		return;
 	}
-	file << line;
+	//file << static_cast<int>(line[0]) << " " << static_cast<int>(line[1]) << " " << static_cast<int>(line[2]) << " " << static_cast<int>(line[4]) << " " << static_cast<int>(line[5]) << std::endl;
+	line = line.substr(5, n - 6);
+	file << line << std::endl;
+	file << std::endl;
 	file.close();
 }
 
@@ -81,17 +89,17 @@ void server::reder_writer(std::shared_ptr<boost::asio::ip::tcp::socket> src,
 					const bool &is_request) {
 	// асинхронное чтение, после прочтения вызывается обработчик
 	src->async_read_some(boost::asio::buffer(*buffer), [src, dst, buffer, is_request](auto error, auto n) {
-		std::cout << "read " << n << ' ' << error << std::endl;
+		//std::cout << "read " << n << ' ' << error << std::endl;
 		if (error) {
 			src->close();
 			dst->close();
 			return;
 		}
 		if (is_request)
-			logging(buffer);
+			logging(buffer, n);
 		async_write(*dst, boost::asio::buffer(buffer->data(), n), boost::asio::transfer_all(),
 			[src, dst, buffer, is_request](auto error, auto n) {
-				std::cout << "write " << n << ' ' << error << std::endl;
+				//std::cout << "write " << n << ' ' << error << std::endl;
 				if (error) {
 					src->close();
 					dst->close();
