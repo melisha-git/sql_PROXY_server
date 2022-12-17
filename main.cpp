@@ -1,9 +1,6 @@
-#include <boost/asio.hpp>
-#include <iostream>
-
-#include <boost/asio.hpp>
 #include <iostream>
 #include <fstream>
+#include <boost/asio.hpp>
 
 class server {
 private:
