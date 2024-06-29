@@ -13,6 +13,10 @@
 #include <memory>
 #include <functional>
 #include <fstream>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 
 struct SConnectionInfo {
 public:
@@ -190,6 +194,13 @@ SConnectionInfo parseDatabaseArguments(const std::string& host, const std::strin
 }
 
 void logining(char* buffer, int bytes) {
+
+    auto now = std::chrono::system_clock::now();
+    
+    std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+    
+    std::tm localTime = *std::localtime(&currentTime);
+    
     static int count = 0;
 
 	std::string line(buffer, bytes - 1);
@@ -204,7 +215,7 @@ void logining(char* buffer, int bytes) {
 	}
 
 	line = line.substr(5, bytes - 6);
-	file << line << std::endl;
+	file << std::put_time(&localTime, "%Y-%m-%d %H:%M:%S") << "| " << line << std::endl;
 	file << std::endl;
 	file.close();
 }
