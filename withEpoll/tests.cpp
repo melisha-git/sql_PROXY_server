@@ -12,8 +12,7 @@
 #include <regex>
 #include <memory>
 #include <functional>
-
-#define MAX_EVENTS 32
+#include <fstream>
 
 struct SConnectionInfo {
 public:
@@ -83,7 +82,7 @@ public:
         }
         Socket epollfd(epoll_create1(0));
 
-        struct epoll_event ev, events[MAX_EVENTS];
+        struct epoll_event ev, events[EventSize];
         ev.events = EPOLLIN;
         ev.data.fd = sockfd_;
 
@@ -92,7 +91,7 @@ public:
         }
 
         while (true) {
-            int nfds = epoll_wait(epollfd.getFD(), events, MAX_EVENTS, -1);
+            int nfds = epoll_wait(epollfd.getFD(), events, EventSize, -1);
             if (nfds == -1) {
                 throw std::logic_error("Socket epoll wait failed");
             }
@@ -158,6 +157,7 @@ public:
         
     }
 private:
+    static const int EventSize = 32;
     int sockfd_;
     struct sockaddr_in socketAddress_;
 };
@@ -189,6 +189,26 @@ SConnectionInfo parseDatabaseArguments(const std::string& host, const std::strin
     return SConnectionInfo{parseConnectionHost(host), parseConnectionPort(port)};
 }
 
+void logining(char* buffer, int bytes) {
+    static int count = 0;
+
+	std::string line(buffer, bytes - 1);
+	if (line.empty())
+		return;
+	if (static_cast<int>(line[0]) != 81)
+		return;
+	std::ofstream file("log.txt", std::ios::app |  std::ios::binary);
+	if (!file.is_open()) {
+		std::cerr << "Log.txt not open\n";
+		return;
+	}
+
+	line = line.substr(5, bytes - 6);
+	file << line << std::endl;
+	file << std::endl;
+	file.close();
+}
+
 int main(int argc, char** argv) {
     try {
         if (argc < 4) {
@@ -214,9 +234,10 @@ int main(int argc, char** argv) {
             auto db = std::move(clientDatabases.at(clientSocket->getFD()));
             try {
                 char buf[4096];
-                int bytes_read = 0;
-                while ((bytes_read = clientSocket->reading(buf)) >= 0) {
-                    db->writing(buf, bytes_read);
+                int bytesRead = 0;
+                while ((bytesRead = clientSocket->reading(buf)) >= 0) {
+                    logining(buf, bytesRead);
+                    db->writing(buf, bytesRead);
                     int dbResult = db->reading(buf);
                     clientSocket->writing(buf, dbResult);
                 }
